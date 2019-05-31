@@ -1,4 +1,4 @@
-# Custom Post Multi Filter
+# ACF Search Filter
 
 Enable module, create some content types, add some ACF fields to them.
 
