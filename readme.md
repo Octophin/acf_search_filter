@@ -1,4 +1,4 @@
-# ACF Search Filter
+# WordPress Advanced Custom Fields filter and post search
 
 ![Functionality demo](/acf_demo.gif?raw=true)
 
