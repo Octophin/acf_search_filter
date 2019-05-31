@@ -1,6 +1,6 @@
 # ACF Search Filter
 
-![Alt text](/acf.gif?raw=true "Optional Title")
+![Functionality demo](/acf_demo.gif?raw=true)
 
 Enable module, create some content types, add some ACF fields to them.
 
