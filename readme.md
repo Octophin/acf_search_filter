@@ -1,5 +1,7 @@
 # ACF Search Filter
 
+![Alt text](/acf.gif?raw=true "Optional Title")
+
 Enable module, create some content types, add some ACF fields to them.
 
 Then run `cpf_print()` with some options.
