@@ -1,5 +1,7 @@
 # WordPress Advanced Custom Fields filter and post search
 
+## Created for NUS For Good by Octophin Digital
+
 ![Functionality demo](/acf_demo.gif?raw=true)
 
 Enable module, create some content types, add some ACF fields to them.
