@@ -4,96 +4,98 @@
  * Plugin Name: Custom Post Multifield Filter
  * Description: ACF and custom post type filter with autopopulating dropdowns
  * Author: Octophin Digital
- * Version: 1.0.0
+ * Version: 2.0.0
  * Author URI: https://octophindigital.com/
 
-*/
+ */
 
 add_action('wp_enqueue_scripts', 'cpf_scripts');
 
-function cpf_scripts() {
-    wp_register_style( 'cpf', plugin_dir_url( __FILE__ ) . "/style.css" );
-    wp_enqueue_style( 'cpf' );
-    wp_enqueue_script( 'cpf', plugin_dir_url( __FILE__ ) . "/script.js");
+function cpf_scripts()
+{
+    wp_register_style('cpf', plugin_dir_url(__FILE__) . "/style.css");
+    wp_enqueue_style('cpf');
+    wp_enqueue_script('cpf', plugin_dir_url(__FILE__) . "/script.js", [], null, true);
 }
 
-function cpf_print ($options = null){
+function cpf_print($options = null)
+{
 
     $output = array();
 
-    if(!$options){
+    if (!$options) {
 
         return;
-
     } else {
 
-        $postTypeList = array();
+        $groups = array();
 
-        foreach ($options["content"] as $contentType){
+        foreach ($options as $groupName => $contentTypes) {
 
-            $type = $contentType["type"];
+            $groups[$groupName] = array();
 
-            $postTypeList[$type] = array(
-                "posts" => array(),
-                "filters" => array()
-            );
+            foreach ($contentTypes as $contentType) {
 
-            $posts = get_posts(array( 
-                'numberposts'		=> -1,
-                'post_type'		=> $type,
-                'orderby' 		=> 'title',
-              ));
+                // Add the content type to the group
 
-            foreach ($posts as $post){
+                $type = $contentType["type"];
+                $typeLabel = $contentType["label"];
 
-                // Get basic fields
-
-                $indexedPost = array(
-                    "title" => $post->post_title,
-                    "link" => get_post_permalink($post)
+                $groups[$groupName][$typeLabel] = array(
+                    "posts" => array(),
+                    "filters" => array()
                 );
 
-                // Get acf fields
+                $posts = get_posts(array(
+                    'numberposts'        => -1,
+                    'post_type'        => $type,
+                    'orderby'         => 'title',
+                ));
 
-                foreach ($contentType["fields"] as $field){
+                foreach ($posts as $post) {
 
-                    if(!isset($postTypeList[$type]["filters"][$field])){
+                    // Get basic fields
 
-                        $postTypeList[$type]["filters"][$field] = array();
+                    $indexedPost = array(
+                        "title" => $post->post_title,
+                        "link" => get_post_permalink($post)
+                    );
 
-                    }
+                    // Get acf fields
 
-                    $fieldValue = get_field($field, $post);
+                    foreach ($contentType["fields"] as $fieldLabel => $field) {
 
-                    if($fieldValue){
+                        if (!isset($groups[$groupName][$typeLabel]["filters"][$fieldLabel])) {
 
-                        $indexedPost[$field] = strval($fieldValue);
-                       
-                        // Add to possible field values for dropdown
-
-                        if(!in_array($fieldValue, $postTypeList[$type]["filters"][$field])){
-
-                            $postTypeList[$type]["filters"][$field][] = $fieldValue;
-
+                            $groups[$groupName][$typeLabel]["filters"][$fieldLabel] = array();
                         }
-                        
+
+                        $fieldValue = get_field($field, $post);
+
+                        if ($fieldValue) {
+
+                            $indexedPost[$fieldLabel] = strval($fieldValue);
+
+                            // Add to possible field values for dropdown
+
+                            if (!in_array($fieldValue, $groups[$groupName][$typeLabel]["filters"][$fieldLabel])) {
+
+                                $groups[$groupName][$typeLabel]["filters"][$fieldLabel][] = $fieldValue;
+                            }
+                        }
                     }
 
+                    $groups[$groupName][$typeLabel]["posts"][] = $indexedPost;
                 }
-
-                $postTypeList[$type]["posts"][] = $indexedPost;
-
             }
         }
 
         // Include HTML
 
-        include(plugin_dir_path( __FILE__ ) . "/template.php");
+        include(plugin_dir_path(__FILE__) . "/template.php");
 
         echo "<script>";
-        echo "runCpf(JSON.parse(`" . json_encode($postTypeList) . "`));";
+        echo "window.cpf = JSON.parse(`" . json_encode($groups) . "`);";
         echo "</script>";
-
     }
-
-};
+}

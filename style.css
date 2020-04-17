@@ -1,14 +1,9 @@
-#cpf input, #cpf select {
-    padding: 1em;
-    margin: 0.5em;
+#cpf #cpf-submit-and-results {
+  display: none;
 }
-
-#cpf .filters {
-    margin-top: 1em;
+#cpf [data-group] {
+  display: none;
 }
-
-#cpf button {
-    margin-top: 1em;
-    display: block;
-    padding: 1em;
+#cpf [data-type] {
+  display: none;
 }

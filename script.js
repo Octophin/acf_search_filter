@@ -1,111 +1,157 @@
-let showFilters = function () {
+// Run search everytime something changes
 
-    let selected = document.getElementById("type").value;
+var refreshCPF = function () {
 
-    document.querySelectorAll("[data-filter-type]").forEach(function (element) {
+    // Check if a group is selected and add it as a data attribute to the top
 
-        if (element.getAttribute("data-filter-type") === selected) {
+    let group = document.getElementById("cpf-groups").value;
 
-            element.style.display = "block";
+    document.getElementById("cpf").setAttribute("data-current-group", group);
 
-        } else {
+    // If no group hide the search button
 
-            element.style.display = "none";
+    if (!group) {
+
+        document.getElementById("cpf-submit-and-results").style.display = "none";
+
+    } else {
+
+        document.getElementById("cpf-submit-and-results").style.display = "block";
+
+    }
+
+    if (group) {
+
+        // Check if a content type is selected within this group and add it as a data attribute to the top
+
+        let contentType = document.querySelector("[data-group='" + group + "'] .typeChange").value;
+
+        document.getElementById("cpf").setAttribute("data-current-type", contentType);
+
+    }
+
+}
+
+// Run on page load
+
+refreshCPF();
+
+var searchCPF = function () {
+
+    let group = document.getElementById("cpf").getAttribute("data-current-group");
+    let type = document.getElementById("cpf").getAttribute("data-current-type");
+    let keywords = document.getElementById("cpf-keywords").value;
+
+    // First get all content from group
+
+    let groupContent = cpf[group];
+
+    let posts = [];
+
+    if (type) {
+
+        posts = groupContent[type].posts;
+
+    } else {
+
+        // Type is all, search all
+
+        for (type in groupContent) {
+
+            posts = posts.concat(groupContent[type].posts);
 
         }
 
+    }
 
-    });
+    // Got posts, now get meta fields if any set
 
-};
+    var filters = [];
 
-let runCpf = function (config) {
+    if (type) {
 
-    document.getElementById("type").addEventListener("change", showFilters);
+        document.querySelectorAll(".filters[data-type='" + type + "'] select").forEach(function (filter) {
 
-    showFilters();
-
-    document.getElementById("cpf-search").addEventListener("click", function () {
-
-        let search = {
-            type: document.getElementById("type").value,
-            filters: []
-        };
-
-        search.keywords = document.getElementById("keywords").value;
-
-        document.querySelectorAll("[data-filter-type=" + search.type + "] select").forEach(function (dropdown) {
-
-            let key = dropdown.getAttribute("name");
-            let value = dropdown.options[dropdown.selectedIndex].value;
+            var filterName = filter.getAttribute("name");
+            var value = filter.value;
 
             if (value) {
 
-                search.filters.push({
-                    key: key,
+                filters.push({
+                    filter: filterName,
                     value: value
                 });
 
             }
 
-        });
+        })
 
-        let searchWithin = config[search.type].posts;
+    }
 
-        let output = searchWithin.filter(function (item) {
+    // Now have keywords, filters and type. Can search posts
 
-            let show = true;
+    // First check if we have any filters and filter out the posts that don't match
 
-            search.filters.forEach(function (filter) {
+    if (filters.length) {
 
-                if (item[filter.key] !== filter.value) {
+        filters.forEach(function (filter) {
 
-                    show = false;
+            posts = posts.filter(function (post) {
 
-                }
+                return post[filter.filter] === filter.value;
 
-            });
+            })
 
-            return show;
+        })
 
-        });
+    }
 
-        // Finally filter by keywords
+    // Now filter by keyword
 
-        output = output.filter(function (item) {
+    // Lowercase the keywords and split by word so they can appear in any order
 
-            return item.title.toLowerCase().indexOf(search.keywords) !== -1;
+    keywords = keywords.toLowerCase().split(" ");
 
-        });
+    keywords.forEach(function (word) {
 
-        let message = "";
+        posts = posts.filter(function (post) {
 
-        if (output.length === 0) {
+            var searchable = post.title.toLowerCase();
 
-            message += "No results. Change your search terms and try again.";
+            return searchable.indexOf(word) !== -1;
 
-        } else if (output.length === 1) {
+        })
 
-            message += "One result";
+    })
 
-        } else {
+    // Got results. Now show!
 
-            message += output.length + " results";
+    let message = "";
 
-        }
+    if (posts.length === 0) {
 
-        document.getElementById("count").innerHTML = message;
+        message += "No results. Change your search terms and try again.";
 
-        let results = "";
+    } else if (posts.length === 1) {
 
-        output.forEach(function (result) {
+        message += "One result";
 
-            results += "<li><a href='" + result.link + "'>" + result.title + "</a></li>";
+    } else {
 
-        });
+        message += output.length + " results";
 
-        document.getElementById("results-list").innerHTML = results;
+    }
+
+    document.getElementById("count").innerHTML = message;
+
+    let results = "";
+
+    posts.forEach(function (result) {
+
+        results += "<li><a href='" + result.link + "'>" + result.title + "</a></li>";
 
     });
 
-};
+    document.getElementById("results-list").innerHTML = results;
+
+}

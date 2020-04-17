@@ -1,63 +1,125 @@
 <section id="cpf">
 
-    <label for="keyword">Keywords</label>
-    <input id="keywords" name="keywords" type="search" /><br />
+    <!-- Generate styles to show and hide elements -->
 
-    <label for="type">Category</label><select id="type">
+    <style>
         <?php
 
-foreach(array_keys($postTypeList) as $type){
+        foreach ($groups as $groupName => $groupDetails) {
 
-    echo "<option value='" . $type . "'>" . $type . "</option>";
-    
-}
+            echo "\n";
+
+            echo "#cpf[data-current-group='" .  $groupName . "'] [data-group='" . $groupName . "'] {
+
+                display:block;
+
+            }";
+
+            echo "\n";
+
+            foreach (array_keys($groupDetails) as $contentType) {
+
+                echo "\n";
+
+                echo "#cpf[data-current-type='" .  $contentType . "'] [data-type='" . $contentType . "'] {
+
+                    display:block;
+
+                }";
+
+                echo "\n";
+            }
+        }
 
         ?>
-    
-    </select>
+    </style>
 
-    <?php 
-    
-    foreach($postTypeList as $type => $details){
 
-        echo '<section data-filter-type="' . $type . '" class="filters">';
-        
-            foreach($details["filters"] as $fieldName => $values){
 
-                echo "<label for='".$fieldName."'>" . $fieldName . "</label>";
+    <!-- Keyword search - works across all areas -->
+    <label for="keyword">Keywords</label>
+    <input id="cpf-keywords" name="keywords" type="search" /><br />
 
-                echo "<select name='".$fieldName."'>";
+    <?php
+
+    // Loop over groups to create a groups dropdown
+
+    echo "<select id='cpf-groups' onchange='refreshCPF()'>";
+
+    echo "<option value=''>Category</option>";
+
+    foreach (array_keys($groups) as $groupName) {
+
+        echo "<option value='" . $groupName . "'>" . $groupName . "</option>";
+    }
+
+    echo "</select>";
+
+    // Make an area for that group's select to sit
+
+    foreach ($groups as $groupName => $contentTypes) {
+
+        echo "<section data-group='" . $groupName . "'>";
+
+        // Add select for each content type
+
+        echo "<select class='typeChange' onchange='refreshCPF()'>";
+
+        echo "<option value=''>All</option>";
+
+        foreach (array_keys($contentTypes) as $contentType) {
+
+            echo "<option value='" . $contentType . "'>" . $contentType . "</option>";
+        }
+
+        echo "</select>";
+
+        foreach ($contentTypes as $contentTypeLabel => $contentType) {
+
+            // Add extra sub-sections for each content type
+
+            echo '<section data-type="' . $contentTypeLabel . '" class="filters">';
+
+            foreach ($contentType["filters"] as $fieldName => $values) {
+
+                echo "<label for='" . $fieldName . "'>" . $fieldName . "</label>";
+
+                echo "<select name='" . $fieldName . "'>";
 
                 echo "<option value='' selected=selected>Select</option>";
 
-                foreach($values as $value){
+                foreach ($values as $value) {
 
                     echo "<option value='" . $value . "'>" . $value . "</option>";
-
                 }
 
                 echo "</select>";
-
             }
 
-        echo '</section>';
+            echo '</section>';
+        }
 
-    };
+        echo "</section>";
+    }
 
     ?>
 
-    <button id="cpf-search" type='button'>Search</button>
+    <section id="cpf-submit-and-results">
 
-    <div id="results">
+        <button onclick='searchCPF()' id="search-cpf" type='button'>Search</button>
 
-        <div id="count"></div>
+        <div id="results">
 
-        <ul id="results-list">
+            <div id="count"></div>
 
-            
+            <ul id="results-list">
 
-        </ul>
 
-    </div>
+
+            </ul>
+
+        </div>
+
+    </section>
 
 </section>
